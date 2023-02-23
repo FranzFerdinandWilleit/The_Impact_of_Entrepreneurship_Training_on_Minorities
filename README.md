@@ -1,5 +1,5 @@
 # The-Impact-of-Entrepreneurship-Training-on-Minorities
-Replication Paper: Lyons, Elizabeth & Laurina, Zhang (2017): The Impact of Entrepreneurship Programs on Minorities. American Economic Review, 107 (5): 303-07.
+Replication: Lyons, E. & Zhang, L. (2017): The Impact of Entrepreneurship Programs on Minorities. American Economic Review, 107 (5): 303-07.
 
 This paper was the final project for the class “R for Empirical Economics Research” with Prof Griffen at the University of Tokyo, Graduate School of Economics.
 
