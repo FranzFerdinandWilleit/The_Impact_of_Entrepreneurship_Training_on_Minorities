@@ -1,0 +1,524 @@
+---
+title: "The Impact of Entrepreneurship Training on Minorities"
+author: "Franz Ferdinand Willeit (51218250)"
+date: "06. Febraury 2022"
+output:
+  pdf_document: default
+  html_document: default
+---
+```{r, include=FALSE}
+library(dplyr)
+library(usethis)
+library(magrittr)
+library(devtools)
+library(jtools)
+library(skimr)
+library(rmarkdown)
+library(tidyverse)
+library(knitr)
+library(hrbrthemes)
+library(gapminder)
+library(ggplot2)
+library(ggthemes)
+library(Hmisc)
+library(wesanderson)
+library(stargazer)
+library(corrplot)
+library(cowplot)
+library(outliers)
+library(relaimpo)
+library(ggpubr)
+library(sm)
+library(interactions)
+library(vtable)
+library(haven)
+library(DescTools)
+library(CGPfunctions)
+```
+
+```{r, include = FALSE}
+setwd("C:/Users/wille/Documents/R")
+getwd()
+```
+
+```{r, include = FALSE}
+data <- read_dta("Lyons_Zhang2016_AERPP_analysisdata.dta")
+data <- data %>% na.omit()
+```
+
+```{r, include = FALSE}
+names(data)
+glimpse(data)
+summary(data)
+describe(data)
+sum(is.na(data))
+```
+
+## 1. Introduction
+
+There is still little rigorous evidence on the impact of entrepreneurial training programs both in general and on marginalized groups, such as women (Bruhn et al. 2011; Bruhn et al. 2012; Drexler et al. 2014; Karlan et al. 2011; Karlan et al. 2012). In this context, Elisabeth Lyons and Laurina Zhang (2017) published their article The Impact of Entrepreneurship Programs on Minorities in the American Economic Review. As the title suggests, the paper investigates the impact of entrepreneurship programs on minorities, namely female and non-Caucasian participants. Therefore, the authors develop the hypothesis that female and non-Caucasian participants are affected differently by entrepreneurship programs. Accordingly, the null-hypothesis corresponds to the idea that all participants – no matter their gender or race – are affected similarly by entrepreneurship programs. To reject the null-hypothesis, the authors analyze The Next 36, an entrepreneurship training and incubation program for undergraduate students in and from Canada. Among others they obtain the following results (Lyons & Zhang 2017a):
+
+1. Participation in The NEXT 36 correlates with a 23 percent increase in the likelihood of short-term start-up activity for non-minorities. 
+2. Participation in The NEXT 36 correlates with a 28 percent increase in the likelihood of ongoing start-up activity for female and 19 percent for non-Caucasian.
+
+A more comprehensive explanation of the topic was published by the authors in the Strategic Management Journal as a research paper titled Who does (not) benefit from entrepreneurship programs? (Lyons & Zhang 2017b).
+
+This project paper tries to replicate the results published by Elisabeth Lyons and Laurina Zhang (2017a) as the final project for the class R for Empirical Economics Research by the Graduate School of Economics (GSE) at the University of Tokyo. Therefore, this paper independently analyses the data provided by the authors via the website of the American Economic Association in R. Unfortunately, however, the scope of the replication paper was narrowed down in the course due to missing data. Although both the authors as well as The NEXT 36 program have been contacted via mail, it was not possible to retrieve the required data. The NEXT 36 program did not respond in time while the authors do not possess the data anymore, due to privacy concerns.
+Accordingly, Chapter 2 introduces the summary statistics of the sample, while the results of the analysis are presented in Chapter 3 and a conclusion is draw in Chapter 4.
+
+## 2. Data
+
+The sample includes data from 335 finalists to the NEXT 36 program between the years 2011 and 2015. 179 (53.433 percent) of the finalists were accepted to the program, while 156 (46.567 percent) did not make the cut-off.
+
+```{r, include = FALSE}
+data_accepted <- data %>% filter(accepted == 1)
+data_rejected <- data %>% filter(accepted == 0)
+
+nrow(data_rejected) 
+nrow(data_accepted)
+
+(nrow(data_rejected)/nrow(data))*100
+(nrow(data_accepted)/nrow(data))*100
+```
+
+*Table 1* shortly displays the characteristics for all finalists in the program, while *Table 2* and *Table 3* distinguish between the accepted and not accepted finalists, respectively.
+
+```{r, echo=FALSE}
+data %>% dplyr::select(accepted, average_score, prior_entrepreneurship, 
+                                female, non_white, years_to_grad, startup_region,
+                                engineer_compsci, business, school_rank) %>% 
+  st(, digits = 3, summ = c("notNA(x)", "mean(x)", "sd(x)", 
+                                             "min(x)", "max(x)"), summ.names = 
+                                             c("Obs.", "Mean", "Std. Dev.", 
+                                             "Mininimum", "Maximum"),
+     labels = c("Program participant", "Interview score", "Priop 
+                entrepreneurship experience", "Female", "Non-Caucasian", "Years 
+                to graduation", "Lives in active start-up region",
+                "Engineering/science Major", "Business/economics major", 
+                "Undergraduate college ranking"), title = "Summary Statistics
+     on Characteristics")
+
+data_accepted %>% dplyr::select(average_score, prior_entrepreneurship, 
+                       female, non_white, years_to_grad, startup_region,
+                       engineer_compsci, business, school_rank ) %>% 
+  st(, digits = 3, summ = c("mean(x)", "sd(x)", 
+                                             "min(x)", "max(x)"), summ.names = 
+       c("Mean", "Std. Dev.", "Mininimum", "Maximum"),
+     labels = c("Interview score", "Priop entrepreneurship experience", 
+     "Female", "Non-Caucasian", "Years to graduation", 
+     "Lives in active start-up region", "Engineering/science Major", 
+     "Business/economics major", "Undergraduate college ranking"), title = 
+       "Summary Satistics on Characteristics: Accepted Finalists")
+
+data_rejected %>% dplyr::select(average_score, prior_entrepreneurship, 
+                                female, non_white, years_to_grad, startup_region,
+                                engineer_compsci, business, school_rank) %>% 
+  st(, digits = 3, summ = c("mean(x)", "sd(x)", 
+                                             "min(x)", "max(x)"), summ.names = 
+       c("Mean", "Std. Dev.", "Mininimum", "Maximum"),
+     labels = c("Interview score", "Priop entrepreneurship experience", 
+                "Female", "Non-Caucasian", "Years to graduation", 
+                "Lives in active start-up region", "Engineering/science Major", 
+                "Business/economics major", "Undergraduate college ranking"),
+     title =  "Summary Satisticson Characteristics: Not Accepted Finalists")
+```
+
+By controlling for these characteristics of the participants, the authors tried to estimate the impact of participation in the NEXT 36 entrepreneurship training program on the finalists, which were accepted to the program, while comparing their outcome with the finalists, which, ultimately, were not accepted to the program.
+
+Therefore, the data set contains two outcome variables, which are mutually exclusive:
+
+* The first variable (*short_run_activity*) measures the short-term activity of finalists in the start-up sector.
+* The second variable (*ongoing_activity*) measures any ongoing activity of the finalists in the start-up scene.
+
+*Table 4* as well as *Table 5* and *Table 6* present the summary statistics for finalists, accepted finalists and not accepted finalists with regards to the outcome variables.
+
+```{r, echo=FALSE}
+data %>% dplyr::select(short_run_activity, ongoing_activity) %>% 
+  st(, digits = 3, summ = c("notNA(x)", "mean(x)", "sd(x)", 
+                                            "min(x)", "max(x)"), summ.names = 
+       c("Obs.", "Mean", "Std. Dev.", "Mininimum", "Maximum"), 
+     labels =  c("Short-term start-up activity", "Ongoing start-up activity"),
+     title = "Summary Statistics on Outcomes")
+
+data_accepted %>% dplyr::select(short_run_activity, ongoing_activity) %>% 
+  st(, digits = 3, summ = c("mean(x)", "sd(x)"), summ.names = 
+       c("Mean", "Std. Dev."), 
+     labels =  c("Short-term start-up activity", "Ongoing start-up activity"), 
+     title = "Summary Statistics on Outcomes: Accepted Finalists")
+
+###rejected finalists
+data_rejected %>% dplyr::select(short_run_activity, ongoing_activity) %>% 
+  st(, digits = 3, summ = c("mean(x)", "sd(x)"), summ.names = 
+       c("Mean", "Std. Dev."), 
+     labels =  c("Short-term start-up activity", "Ongoing start-up activity"), 
+     title = "Summary Statistics on Outcomes: Not Accepted Finalists")
+```
+
+It seemed, however, advisable, to add an additional variables to the data set, to measure whether finalists exhibited either short-term or ongoing start-up activity. Therefore, the dummy variable *startup_activity* was created.
+
+```{r, include=FALSE}
+data$startup_activity <- 0
+data$startup_activity <- ifelse(data$short_run_activity == 1, 1, 
+                                ifelse(data$ongoing_activity == 1, 1, 0))
+
+data_accepted <- data %>% filter(accepted == 1)
+data_rejected <- data %>% filter(accepted == 0)
+```
+
+```{r, include=FALSE}
+data %>% dplyr::select(finalist_id, short_run_activity, ongoing_activity, 
+                       startup_activity) %>% print(n=500)
+```
+
+```{r, include=FALSE}
+count(data, startup_activity)
+
+table_startup_activity <- PercTable(short_run_activity ~ ongoing_activity, 
+                                    data=data, margins=c(1,2))
+table_startup_activity
+```
+
+Looking at the finalist it can be stated, that 128 (38.2 percent) were not employed in the start-up environment at all, while 207 out of 335 either worked in the short-term (70 or 20.9 percent) or continuously work for a start-up (137 or 40.9 percent).
+These numbers can be disseminated further by distinguishing between accepted and not accepted finalists. 
+Among the 179 accepted finalists, 136 (75.98 percent) worked in the start-up scene either in the sort-run or at the time of the survey. They account for a total of 65.7 percent of start-up activity after the program. Out of these 136 participants, 51 (37.5 percent) presented short-run activities while 85 (62.5 percent) were still employed by a start-up. Account for a total of percent short-run and percent ongoing start-up activity.
+At the same time, among the 156 not accepted finalists, only 71 (45.5 percent) presented any start-up activities at all, corresponding to 34.3 percent of total start-up activity. Out of these 71 not accepted finalists, 19 (26.76 percent) were active in the short-run only and 52 (73.24 percent) had ongoing start-up activities.
+
+These results already suggests that, in general, the NEXT 36 had an impact on short-run but not on ongoing start-up activities for participants. Calculating Pearson's R confirms a positive correlation between participation in the program and start-up activity. There is also a slightly positive relationship between acceptance into the program and short-run as well as ongoing start-up activity, whereby the first is significantly higher than the latter.
+
+```{r, include=FALSE}
+cor(data$accepted, data$startup_activity,  method = "pearson", use = "complete.obs")
+cor(data$accepted, data$short_run_activity,  method = "pearson", use = "complete.obs")
+cor(data$accepted, data$ongoing_activity,  method = "pearson", use = "complete.obs")
+```
+
+```{r, include = FALSE}
+count(data_accepted, startup_activity)
+count(data_accepted, startup_activity) [2,2] / 
+  nrow(data_accepted) * 100
+
+count(data_accepted, startup_activity) [2,2] / 
+  count(data, startup_activity) [2,2] * 100
+
+data %>% filter(accepted == 1, short_run_activity == 1) %>% nrow()
+(data %>% filter(accepted == 1, short_run_activity == 1) %>% nrow() /
+    count(data_accepted, startup_activity) [2,2]) * 100
+
+data %>% filter(accepted == 1, ongoing_activity == 1) %>% nrow()
+(data %>% filter(accepted == 1, ongoing_activity == 1) %>% nrow() / 
+  count(data_accepted, startup_activity) [2,2]) * 100
+```
+
+```{r, include=FALSE}
+count(data_rejected, startup_activity)
+count(data_rejected, startup_activity) [2,2] / 
+  nrow(data_rejected) * 100
+
+count(data_rejected, startup_activity) [2,2] / 
+  count(data, startup_activity) [2,2] * 100
+
+data %>% filter(accepted == 0, short_run_activity == 1) %>% nrow()
+(data %>% filter(accepted == 0, short_run_activity == 1) %>% nrow() /
+    count(data_rejected, startup_activity) [2,2]) * 100
+
+data %>% filter(accepted == 0, ongoing_activity == 1) %>% nrow()
+(data %>% filter(accepted == 0, ongoing_activity == 1) %>% nrow() / 
+    count(data_rejected, startup_activity) [2,2]) * 100
+```
+
+## 3. Analysis
+
+The authors, however, were not interested in the general impact of the program on the participants, but on the outcome based on the participant's minority status. Therefore, the data set includes three variables (for summary statistics see *Table 1*).
+
+* The first variable (*minority*) indicates whether a finalist belongs to a minority or not, while the other two variables further specify the minority status.
+* The second variable (*female*) indicates whether a finalist is female or not.
+* The last variable (*non_white*) indicates whether a finalist is Caucasian or not.
+
+It is important, however, that while a finalist can either belong to a minority (*minority* = 1) or not (*minority* = 0), the variables indicating sex and race are not mutually exclusive. Accordingly, a finalist can be:
+
+* male and Caucasian (*female* = 0 & *non_white* = 0)
+* female and Caucasian (*female* = 1 & *non_white* = 0)
+* male and non-Caucasian (*female* = 0 & *non_white* = 1)
+* female and non-Caucasian (*female* = 1 & *non_white* = 1)
+
+To understand the impact of the program on these four categories, the paper first examines the admission data (*accepted*) to determine whether finalists are more likely to be accepted to the program based on their minority status. The the outcome (*startup_activity*, *short_run_activity*, *ongoing_activity*) of the program is investigated based on the finalists minority status 
+
+### 3.1 Programm acceptance of minorties
+
+Unfortunately, the authors did not further investigate the relationship between the likelihood of being accepted to the program and the finalist's minority status.
+
+Looking at the data, we can find the following results. Out of 335 finalists 212 (63.28 percent) belonged to a minority.
+Accordingly 36.7 percent of finalists were male and Caucasian, 12.8 percent female and Caucasian, 36.7 percent male and non_Caucasian, and 13.7 percent female and non-Caucasian. In total slightly more finalist were non-Caucasian (50.4 percent) compared to Caucasian (49.6 percent). At the same time, finalists were predominantly male (73.4 percent) and women accounted for only 26.6 percent.
+Out of these 212 finalists with minority status 43 (20.28 percent) were female and Caucasian, 123 (58 percent) were male and non-Caucasian, and finally 46 (21.7 percent) were female and non-Caucasian. For more information please consult the Figure 1-4 in the Annex.
+
+```{r, include=FALSE}
+table_finalists_minority <- PercTable(female ~ non_white, data=data, margins=c(1,2))
+table_finalists_minority 
+
+count(data, minority)
+count(data, minority) [2,2] / length(data$minority) * 100
+
+data %>% filter(female == 1, non_white == 0) %>% nrow() / 
+  count(data, minority) [2,2] * 100
+
+data %>% filter(female == 1, non_white == 1) %>% nrow() / 
+  count(data, minority) [2,2] * 100
+
+data %>% filter(female == 0, non_white == 1) %>% nrow() / 
+  count(data, minority) [2,2] * 100
+```
+
+In total 179 finalists were accepted to the program. 116 (64.8 percent) of them percent belonged to a minority. This corresponds to the 63.28 percent of finalists. Among the 116 accepted finalists from a minority, 28 (15.6 percent) were female and Caucasian, 66 (36.9 percent) were male and non-Caucasian, and finally, 22 (12.3 percent) were female and non-Caucasian. 
+
+```{r, include=FALSE}
+data %>% filter(accepted == 1, minority == 1) %>% nrow()
+data %>% filter(accepted == 1, minority == 1) %>% nrow() / data %>% filter(
+  accepted == 1) %>% nrow() * 100
+
+table_accepted_minority <- PercTable(female ~ non_white, data=data_accepted, margins=c(1,2))
+table_accepted_minority
+```
+
+Compared to the finalists, slightly less male and Caucasian finalist were accepted to the program (-1.5 percent), more female and Caucasian finalists were accepted to the program (2.8 percent), slightly more male and non-Caucasian finalists were accepted to the program (0.2 percent), and finally less female and non-Caucasian finalists were accepted to the program (-1.4 percent). This suggests, that male Caucasians and female non-Caucasian finalists were underrepresented among the participants, compared to the finalists.
+In the end, however, female Caucasians and male non-Caucasian finalists might have simply performed better during the selection on average, compared to their counterparts. Accordingly, it makes sense to run a linear regression. Acceptance to the program is the dependent variable, and the finalists' minority status (*Table 7*) or gender and race (*Table 8*) are the independent variables, respectively. None of the explanatory variables, however, are significant. When including more explanatory variables in the model, race and gender are still insignificant (*Table 9*). Instead, the interview score (*average_score*) and the ranking of the school contribute to the likelihood acceptance at a significance level of 99 and 90 percent, respectively:
+
+* a one point higher score in the average interview score (from 1 to 10) is related with a 10 percent higher likelihood of being accepted to the program
+* a one point higher school ranking (from 1 to 4) is related with a 5.7 percent higher likelihood of being accepted to the program.
+
+All three models, however, have a very low R-squared and thus, their explanatory power is very limited.
+
+```{r, include=FALSE}
+model1_accepted_minorities <- lm(accepted ~ minority, data)
+summary(model1_accepted_minorities)
+model2_accepted_minorities <- lm(accepted ~ female*non_white, data)
+summary(model2_accepted_minorities)
+
+model3_accepted_minorities <- lm(accepted ~ female + non_white + average_score + years_to_grad + prior_entrepreneurship + startup_region + engineer_compsci + business + school_rank, data)
+summary(model3_accepted_minorities)
+```
+
+```{r, echo=FALSE}
+model1_accepted_minorities %>% tidy() %>% mutate(p.value = scales::pvalue(p.value), term = c("Intercept", "Minority")) %>% kable(caption = "Minority Status on Finalist Acceptance", col.names = c("Predictor", "B", "SE", "t", "p"),
+    digits = c(0, 2, 3, 2, 3))
+
+model2_accepted_minorities %>% tidy() %>% mutate(p.value = scales::pvalue(p.value), term = c("Intercept", "Female", "non-Caucasian", "Interaction Term")) %>% kable(caption = "Sex and Race on Finalist Acceptance", col.names = c("Predictor", "B", "SE", "t", "p"), digits = c(0, 2, 3, 2, 3))
+
+model3_accepted_minorities %>% tidy() %>% mutate(p.value = scales::pvalue(p.value), term = c("Intercept", "Female", "non-Caucasian", "Average Interview Score", "Years to Graduation", "Prior Experience in Entrepreneurship", "Entrepreneurially active region", "Engineering/Science Major", "Business/Economics Major", "Undergraduate College Ranking")) %>% kable(caption = "Various Characteristics on Finalist Acceptance", col.names = c("Predictor", "B", "SE", "t", "p"), digits = c(0, 2, 3, 2, 3))
+```
+
+### 3.2 Program outcomes for minorties
+
+To determine whether the training had any impact on the participant start-up activities based on their minority status, it is necessary to run multiple linear regressions. The authors of the paper have chosen the same method. For more information on the summary statistics in the sample please consult the Figure 5-12 in the Annex.
+First, to isolate the effect of sex on start-up activities four regressions are required impact of the program on
+
+* Female participants in terms of short-run start-up activities
+* Male participants in terms of short-run start-up activities
+* Female participants in terms of ongoing start-up activities
+* Male participants in terms of ongoing start-up activities
+
+```{r include=FALSE}
+data_female <- data %>% filter(female == 1)
+data_male <- data %>% filter(female == 0)
+
+model_short_run_female <- lm(short_run_activity ~ accepted + non_white + average_score + years_to_grad + prior_entrepreneurship + startup_region + engineer_compsci + business + school_rank, data = data_female)
+summary(model_short_run_female)
+
+model_short_run_male <- lm(short_run_activity ~ accepted + non_white + average_score + years_to_grad + prior_entrepreneurship + startup_region + engineer_compsci + business + school_rank, data = data_male)
+summary(model_short_run_male)
+
+(0.15362 - 0.132752) * 100
+(0.15362 / 0.132752 - 1) * 100
+
+model_ongoing_female <- lm(ongoing_activity ~ accepted + non_white + average_score + years_to_grad + prior_entrepreneurship + startup_region + engineer_compsci + business + school_rank, data = data_female)
+summary(model_ongoing_female)
+
+model_ongoing_male <- lm(ongoing_activity ~ accepted + non_white + average_score + years_to_grad + prior_entrepreneurship + startup_region + engineer_compsci + business + school_rank, data = data_male)
+summary(model_ongoing_male)
+
+(0.091435 - 0.093519) * 100
+(0.091435 / 0.093519 - 1) * 100
+```
+
+```{r, echo=FALSE}
+model_short_run_female %>% tidy() %>% mutate(p.value = scales::pvalue(p.value), term = c("Intercept", "Program participant", "non-Caucasian", "Average Interview Score", "Years to Graduation", "Prior Experience in Entrepreneurship", "Entrepreneurially active region", "Engineering/Science Major", "Business/Economics Major", "Undergraduate College Ranking")) %>% kable(caption = "Short-run effects on female participants", col.names = c("Predictor", "B", "SE", "t", "p"), digits = c(0, 2, 3, 2, 3))
+
+model_short_run_male %>% tidy() %>% mutate(p.value = scales::pvalue(p.value), term = c("Intercept", "Program participant", "non-Caucasian", "Average Interview Score", "Years to Graduation", "Prior Experience in Entrepreneurship", "Entrepreneurially active region", "Engineering/Science Major", "Business/Economics Major", "Undergraduate College Ranking")) %>% kable(caption = "Short-run effects on male participants", col.names = c("Predictor", "B", "SE", "t", "p"), digits = c(0, 2, 3, 2, 3))
+
+model_ongoing_female %>% tidy() %>% mutate(p.value = scales::pvalue(p.value), term = c("Intercept", "Program participant", "non-Caucasian", "Average Interview Score", "Years to Graduation", "Prior Experience in Entrepreneurship", "Entrepreneurially active region", "Engineering/Science Major", "Business/Economics Major", "Undergraduate College Ranking")) %>% kable(caption = "Ongoing effects on female participants", col.names = c("Predictor", "B", "SE", "t", "p"), digits = c(0, 2, 3, 2, 3))
+
+model_ongoing_male %>% tidy() %>% mutate(p.value = scales::pvalue(p.value), term = c("Intercept", "Program participant", "non-Caucasian", "Average Interview Score", "Years to Graduation", "Prior Experience in Entrepreneurship", "Entrepreneurially active region", "Engineering/Science Major", "Business/Economics Major", "Undergraduate College Ranking")) %>% kable(caption = "Ongoing effects on male participants", col.names = c("Predictor", "B", "SE", "t", "p"), digits = c(0, 2, 3, 2, 3))
+```
+
+To understand the impact of the program on female participants, both in terms of short-run and ongoing start-up activity, *Table 10* and *Table 11* or *Table 12* and *Table 13* can be compared. Since the paper revolves around the question whether program participation has an impact on start-up activity, the main predictor in the tables is *Program participant*.
+
+In the short-run, female participants are 15.362 percent more likely to work in a start-up, while the impact on their male counterparts is at 13.275 percent. Accordingly, women are deemed to befit on average 2.087 percent more from the program in the short-term. This corresponds to a 15.72 percent higher output for women. At the same time, however, the predictor is not statistically significant for female participants. Additionally, the R-squared of both models is fairly low.
+
+Looking at the ongoing start-up activities, women are 9.144 percent and men are 9.352 percent more likely to continuously work in a start-up. The difference is marginal at absolute -0.2084 percent and relative -2.23 percent. Yet again, however, the predictors are statistically not significant for both models and the R-squared is low.
+
+Second, to isolate the effect of race on start-up activities the same approach is required, comprising the following four regressions to measure the impact of the program on: 
+
+* Non-Caucasian participants in terms of short-run start-up activities
+* Caucasian participants in terms of short-run start-up activities
+* Non-Caucasian participants in terms of ongoing start-up activities
+* Caucasian participants in terms of ongoing start-up activities
+
+```{r include=FALSE}
+data_non_Caucasian <- data %>% filter(non_white == 1)
+data_Caucasian <- data %>% filter(non_white == 0)
+
+model_short_run_non_Caucasian <- lm(short_run_activity ~ accepted + female + average_score + years_to_grad + prior_entrepreneurship + startup_region + engineer_compsci + business + school_rank, data = data_non_Caucasian)
+summary(model_short_run_non_Caucasian)
+
+model_short_run_Caucasian <- lm(short_run_activity ~ accepted + female + average_score + years_to_grad + prior_entrepreneurship + startup_region + engineer_compsci + business + school_rank, data = data_Caucasian)
+summary(model_short_run_Caucasian)
+
+(0.064273 - 0.232237) * 100
+(0.064273 / 0.232237 - 1) * 100
+
+model_ongoing_non_Caucasian <- lm(ongoing_activity ~ accepted + female + average_score + years_to_grad + prior_entrepreneurship + startup_region + engineer_compsci + business + school_rank, data = data_non_Caucasian)
+summary(model_ongoing_non_Caucasian)
+
+model_ongoing_Caucasian <- lm(ongoing_activity ~ accepted + female + average_score + years_to_grad + prior_entrepreneurship + startup_region + engineer_compsci + business + school_rank, data = data_Caucasian)
+summary(model_ongoing_Caucasian)
+
+(0.11651 - 0.072248) * 100
+(0.11651 / 0.072248 - 1) * 100
+```
+
+```{r, echo=FALSE}
+model_short_run_non_Caucasian %>% tidy() %>% mutate(p.value = scales::pvalue(p.value), term = c("Intercept", "Program participant", "Female", "Average Interview Score", "Years to Graduation", "Prior Experience in Entrepreneurship", "Entrepreneurially active region", "Engineering/Science Major", "Business/Economics Major", "Undergraduate College Ranking")) %>% kable(caption = "Short-run effects on non-Caucasian participants", col.names = c("Predictor", "B", "SE", "t", "p"), digits = c(0, 2, 3, 2, 3))
+
+model_short_run_Caucasian %>% tidy() %>% mutate(p.value = scales::pvalue(p.value), term = c("Intercept", "Program participant", "Female", "Average Interview Score", "Years to Graduation", "Prior Experience in Entrepreneurship", "Entrepreneurially active region", "Engineering/Science Major", "Business/Economics Major", "Undergraduate College Ranking")) %>% kable(caption = "Short-run effects on Caucasian participants", col.names = c("Predictor", "B", "SE", "t", "p"), digits = c(0, 2, 3, 2, 3))
+
+model_ongoing_non_Caucasian %>% tidy() %>% mutate(p.value = scales::pvalue(p.value), term = c("Intercept", "Program participant", "Female", "Average Interview Score", "Years to Graduation", "Prior Experience in Entrepreneurship", "Entrepreneurially active region", "Engineering/Science Major", "Business/Economics Major", "Undergraduate College Ranking")) %>% kable(caption = "Ongoing effects on non-Caucasian participants", col.names = c("Predictor", "B", "SE", "t", "p"), digits = c(0, 2, 3, 2, 3))
+
+model_ongoing_Caucasian %>% tidy() %>% mutate(p.value = scales::pvalue(p.value), term = c("Intercept", "Program participant", "Female", "Average Interview Score", "Years to Graduation", "Prior Experience in Entrepreneurship", "Entrepreneurially active region", "Engineering/Science Major", "Business/Economics Major", "Undergraduate College Ranking")) %>% kable(caption = "Ongoing effects on Caucasian participants", col.names = c("Predictor", "B", "SE", "t", "p"), digits = c(0, 2, 3, 2, 3))
+```
+
+Similarly, to understand the impact of the program on non-Caucasian participants, both in terms of short-run and ongoing start-up activity, the main predictor *Program participant* in *Table 14* and *Table 15* or *Table 16* and *Table 17* can be compared.
+
+In the short-run, non-Caucasian participants are 6.427 percent and Caucasian participants are 23.224 percent more likely to work in a start-up. Accordingly, in the sort-run non-Caucasians are deemed to befit on average 16.7964 percent less from the program than their Caucasian counterparts. This corresponds to a 72.32 lower output for non-Caucasian participants. At the same time, however, the predictor for non-Caucasian participants is not statistically significant. Additionally, the R-squared of both models is fairly low.
+
+Looking at the ongoing start-up activities, non-Caucasian are 11.651 percent and Caucasian participants are 7.225 percent more likely to continuously work in a start-up. The difference is at absolute 4.4262 percent and relative 61.264 percent. Again, however, the predictors are statistically not significant for both models and the R-squared is low.
+
+Looking at minorities from a more general perspective, the effect of the training participant's minority status on start-up activity can be examined. 
+
+```{r include=FALSE}
+data_minority <- data %>% filter(minority == 1)
+data_non_minority <- data %>% filter(minority == 0)
+
+model_short_run_minority <- lm(short_run_activity ~ accepted + average_score + years_to_grad + prior_entrepreneurship + startup_region + engineer_compsci + business + school_rank, data = data_minority)
+summary(model_short_run_minority)
+
+model_short_run_non_minority <- lm(short_run_activity ~ accepted + average_score + years_to_grad + prior_entrepreneurship + startup_region + engineer_compsci + business + school_rank, data = data_non_minority)
+summary(model_short_run_non_minority)
+
+(0.073966 - 0.26845) * 100
+(0.073966 / 0.26845 - 1) * 100
+
+model_ongoing_minority <- lm(ongoing_activity ~ accepted + average_score + years_to_grad + prior_entrepreneurship + startup_region + engineer_compsci + business + school_rank, data = data_minority)
+summary(model_ongoing_minority)
+
+model_ongoing_non_minority <- lm(ongoing_activity ~ accepted + average_score + years_to_grad + prior_entrepreneurship + startup_region + engineer_compsci + business + school_rank, data = data_non_minority)
+summary(model_ongoing_non_minority)
+
+(0.146515 - 0.001117) * 100
+(0.146515 / 0.001117 - 1) * 100
+```
+
+```{r, echo=FALSE}
+model_short_run_minority %>% tidy() %>% mutate(p.value = scales::pvalue(p.value), term = c("Intercept", "Program participant", "Average Interview Score", "Years to Graduation", "Prior Experience in Entrepreneurship", "Entrepreneurially active region", "Engineering/Science Major", "Business/Economics Major", "Undergraduate College Ranking")) %>% kable(caption = "Short-run effects on minority participants", col.names = c("Predictor", "B", "SE", "t", "p"), digits = c(0, 2, 3, 2, 3))
+
+model_short_run_non_minority %>% tidy() %>% mutate(p.value = scales::pvalue(p.value), term = c("Intercept", "Program participant", "Average Interview Score", "Years to Graduation", "Prior Experience in Entrepreneurship", "Entrepreneurially active region", "Engineering/Science Major", "Business/Economics Major", "Undergraduate College Ranking")) %>% kable(caption = "Short-run effects on non-minority participants", col.names = c("Predictor", "B", "SE", "t", "p"), digits = c(0, 2, 3, 2, 3))
+
+model_ongoing_minority %>% tidy() %>% mutate(p.value = scales::pvalue(p.value), term = c("Intercept", "Program participant", "Average Interview Score", "Years to Graduation", "Prior Experience in Entrepreneurship", "Entrepreneurially active region", "Engineering/Science Major", "Business/Economics Major", "Undergraduate College Ranking")) %>% kable(caption = "Ongoing effects on minority participants", col.names = c("Predictor", "B", "SE", "t", "p"), digits = c(0, 2, 3, 2, 3))
+
+model_ongoing_non_minority %>% tidy() %>% mutate(p.value = scales::pvalue(p.value), term = c("Intercept", "Program participant", "Average Interview Score", "Years to Graduation", "Prior Experience in Entrepreneurship", "Entrepreneurially active region", "Engineering/Science Major", "Business/Economics Major", "Undergraduate College Ranking")) %>% kable(caption = "Ongoing effects on non-minority participants", col.names = c("Predictor", "B", "SE", "t", "p"), digits = c(0, 2, 3, 2, 3))
+
+```
+
+Looking at minorities from a more general perspective, it can be said that:
+
+* Minorities are 7.397 percent more likely to engage in short-term start-up activities if they participate in the program. The results are not significant (*Table 18*).
+* Non-minorities are 26.845 percent more likely to engage in short-term start-up activities if they participate in the program (*Table 19*).
+* Accordingly, participating in the program, non-minorities are 19.45 percent more likely to work in start-ups, compared to minorities. This relates to a 130.168 percent difference.
+
+* Minorities are 14.65 percent more likely to continuously engage in start-up activities if they participate in the program (*Table 20*).
+* Non-minorities are 0.11 percent more likely to continuously engage in start-up activities if they participate in the program. The results are not significant (*Table 21*).
+* Accordingly, participating in the program, minorities are 14.54 percent more likely to work continuously in start-ups, compared to non-minorities. This relates to a 130.17 percent difference.
+
+This means, that the program's impact on non-minorities in the short-run and minorities in ongoing start-up activity, if they participate in the program, is comparable. Although the coefficient for the former is significantly higher, the differences between both categories is the same at approximately 130 percent. The estimators for participating minorities in the short-run and participating non-minorities on ongoing start-up activities are not significant. Nonetheless, it is remarkable, that the training's impact on participating non-minorities for ongoing start-up activity is very low.
+
+Including regressions with interaction terms for sex, race and minority status yields the following results:
+
+* Minorities participating in the program are 13.2 percent less likely to participate in short-term start-up activities compared to not accepted minorities or non-minorities in general. The results are not significant.
+* Minorities participating in the program are 16.82 percent more likely to participate in ongoing start-up activities compared to not accepted minorities or non-minorities in general. The results are not significant.
+* Women participating in the program are 6.44 percent less likely to participate in short-term start-up activities compared to not accepted women or men in general. The results are not significant.
+* Women participating in the program are 8.194 percent more likely to participate in ongoing start-up activities compared to not accepted women or men in general. The results are not significant.
+* Non-Caucasians participating in the program are 7.546 percent less likely to participate in short-term start-up activities compared to not accepted non-Caucasians or Caucasians in general. The results are not significant.
+* Non-Caucasians participating in the program are 9.5 percent more likely to participate in ongoing start-up activities compared to not accepted non-Caucasians or Caucasians in general. The results are not significant.
+
+```{r, include=FALSE}
+model_short_run_minority_interaction <- lm(short_run_activity ~ accepted*minority, data)
+summary(model_short_run_minority_interaction)
+model_ongoing_minority_interaction <- lm(ongoing_activity ~ accepted*minority, data)
+summary(model_ongoing_minority_interaction)
+
+model_short_run_female_interaction <- lm(short_run_activity ~ accepted*female, data)
+summary(model_short_run_female_interaction)
+model_ongoing_female_interaction <- lm(ongoing_activity ~ accepted*female, data)
+summary(model_ongoing_female_interaction)
+
+model_short_run_non_white_interaction <- lm(short_run_activity ~ accepted*non_white, data)
+summary(model_short_run_non_white_interaction)
+model_ongoing_non_white_interaction <- lm(ongoing_activity ~ accepted*non_white, data)
+summary(model_ongoing_non_white_interaction)
+```
+
+## 4. Conclusion
+
+The authors of the original paper presented the following results:
+1. Participation in The NEXT 36 correlates with a 23 percent increase in the likelihood of short-term start-up activity for non-minorities. 
+2. Participation in The NEXT 36 correlates with a 28 percent increase in the likelihood of ongoing start-up activity for female and 19 percent for non-Caucasian.
+
+After exploring and analyzing the data provided, this paper finds the following relationships:
+
+1. Participation in The NEXT 36 correlates with a 26.845 percent increase in the likelihood of short-term start-up activity for non-minorities.
+2. Participation in The NEXT 36 correlates with a 23.224 percent increase in the likelihood of short-term start-up activity for Caucasians (at a 98 percent significance level) and a 13.27 percent increase in the likelihood of short-term start-up activity for men (at a 95 percent significance level)  
+
+Accordingly, the paper failed to replicate the results from the original paper. In sum, however, all coefficients are positive, indicating a positive relationship between program participation and start-up activities no matter the participants sex or race. Nonetheless, the majority of the coefficients are statistically insignificant, which bears the question how the authors of the original paper achieve their results.
+
+Up to date many papers tried to measure the impact of training program, but there is little research on the differential impact of entrepreneurial training on minorities. Although the original paper tried to fill this scientific gap, it suffers from very low statistical power due to the low number of observations. Therefore, the authors failed to overcome one of the main criticisms brought forwards by McKenzie et al. already in 2014. For a more successful example, see the Campos et al. (2017).
+
+In the end, it proofed difficult trying to replicate the results, because the raw data was not available and the data provided on the website of the journal was not sufficient. Additionally, this paper is the authors first attempt in replicating a paper published in a renowned journal. Despite a often cited *replication crises*"* he results are not satisfying and the process was not very rewarding.
+
+## 5. References
+
+* Bruhn M. & Zia B. (2011): *Stimulating Managerial Capital in Emerging Markets: The Impact of Business and Financial Literacy for Young Entrepreneurs*. World Bank Policy Research Working Paper 5642.
+* Bruhn M., Karlan D. & Schoar A. (2012): *The Impact of Consulting Services on Small and Medium Enterprises: Evidence from a Randomized Trial in Mexico*. Yale Economics Department: Working Paper no. 100. Yale University: New Haven, CT.
+* Campos F., Frese M., Goldstein M., Iacovone L., Johnson H., McKenzie D. & Mensmann M. (2017): *Teaching personal initiative beats traditional business training in boosting small business in West Africa*. Science, 357: 1287-90 
+* Drexler A., Fischer G. & Schoar A. (2014): Keeping It Simple: Financial Literacy and Rules of Thumb. *American Economic Journal: Applied Economics, 6*: 1-31.
+* Karlan D. & Valdivia M. (2011): Teaching Entrepreneurship: Impact of Business Training on Microfinance Clients and Institutions. *Review of Economics and Statistics, 93*: 510–27.
+* Karlan D., Knight R. & Urdy C. (2012): *Hoping to Win, Expected to Lose: Theory and Lessons on Micro Enterprise Development*. NBER Working Paper 18325.
+* Lyons E. & Zhang L. (2017a): The Impact of Entrepreneurship Programs on Minorities. *American Economic Review, 197*: 303-7.
+* Lyons E. & Zhang L. (2017b): Who does (not) benefit from entrepreneurship programs? *Strategic Management Journal, 39*: 85-112.
+* McKenzie D. & Woodruff C. (2014): *What are We Learning from Business Training and Entrepreneurship Evaluations around the Developing World?* World Bank Research Observer, 29: 48-82.
+
+**Remark:** Due to the requirement and the fact that the data set consist predominantly of dummy variables, the paper does not include  graphs. Some bar graphs, however, can be found in the R Markdown file for reference.
+```{r, include=FALSE}
+
+PlotXTabs2(data, minority, accepted, results.subtitle = FALSE, title = "Figure 1: Finalist by Minority Status and Program Participation") + scale_fill_grey()
+PlotXTabs2(data, female, non_white, results.subtitle = FALSE, title = "Figure 2: Finalists by Sex and Race") + scale_fill_grey()
+PlotXTabs2(data_female, accepted, non_white, results.subtitle = FALSE, title = "Figure 3: Women by Program Participation and Race") + scale_fill_grey()
+PlotXTabs2(data_non_Caucasian, accepted, female, results.subtitle = FALSE, title = "Figure 4: Non Caucasians Program Participation and Sex") + scale_fill_grey()
+PlotXTabs2(data, short_run_activity, minority, results.subtitle = FALSE, title = "Figure 5: Finalists by Short-term Activity and Minority Status") + scale_fill_grey()
+PlotXTabs2(data_accepted, short_run_activity, minority, results.subtitle = FALSE, title = "Figure 6: Participants by Short-term Activity and Minority Status") + scale_fill_grey()
+PlotXTabs2(data_accepted, short_run_activity, female, results.subtitle = FALSE, title = "Figure 7: Participants by Short-term Activity and Sex") + scale_fill_grey()
+PlotXTabs2(data_accepted, short_run_activity, non_white, results.subtitle = FALSE, title = "Figure 8: Participants by Short-term Activity and Race") + scale_fill_grey()
+PlotXTabs2(data, ongoing_activity, minority, results.subtitle = FALSE, title = "Figure 9: Finalists by Ongoing Activity and Minority Status") + scale_fill_grey()
+PlotXTabs2(data_accepted, ongoing_activity, minority, results.subtitle = FALSE, title = "Figure 10: Participants by Ongoing Activity and Minority Status") + scale_fill_grey()
+PlotXTabs2(data_accepted, ongoing_activity, female, results.subtitle = FALSE, title = "Figure 11: Participants by Ongoing Activity and Sex") + scale_fill_grey()
+PlotXTabs2(data_accepted, ongoing_activity, non_white, results.subtitle = FALSE, title = "Figure 12: Participants by Ongoing Activity and Race") + scale_fill_grey()
+```
+
+
+
