@@ -5,4 +5,4 @@ This project represents my final paper for the class “R for Empirical Economic
 
 At the start of the project, I contacted both authors of the original paper published in the American Economic Review. Unfortunately, they could not provide access to their original data. Thus, the data used in this paper was obtained from the website of the American Economic Review (https://www.aeaweb.org/articles?id=10.1257/aer.p20171008) as replication package (https://www.openicpsr.org/openicpsr/project/113492/version/V1/view).
 
-Nontheless, I was not able to replicate their original results. This issue was not further discussed due to time restrictions but I informed both authors.
+Nontheless, I was not able to replicate the results of the original paper. This issue was not further discussed due to time restrictions.
