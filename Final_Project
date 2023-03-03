@@ -81,7 +81,7 @@ nrow(data_accepted)
 (nrow(data_accepted)/nrow(data))*100
 ```
 
-*Table 1* shortly displays the characteristics for all finalists in the program, while *Table 2* and *Table 3* distinguish between the accepted and not accepted finalists, respectively.
+*Table 1* shortly displays the characteristics of all finalists in the program, while *Table 2* and *Table 3* distinguish between the accepted and not accepted finalists, respectively.
 
 ```{r, echo=FALSE}
 data %>% dplyr::select(accepted, average_score, prior_entrepreneurship, 
@@ -125,12 +125,12 @@ data_rejected %>% dplyr::select(average_score, prior_entrepreneurship,
 
 By controlling for these characteristics of the participants, the authors tried to estimate the impact of participation in the NEXT 36 entrepreneurship training program on the finalists, which were accepted to the program, while comparing their outcome with the finalists, which, ultimately, were not accepted to the program.
 
-Therefore, the data set contains two outcome variables, which are mutually exclusive:
+Therefore, the data set contains two mutually exclusive outcome variables:
 
 * The first variable (*short_run_activity*) measures the short-term activity of finalists in the start-up sector.
 * The second variable (*ongoing_activity*) measures any ongoing activity of the finalists in the start-up scene.
 
-*Table 4* as well as *Table 5* and *Table 6* present the summary statistics for finalists, accepted finalists and not accepted finalists with regards to the outcome variables.
+*Table 4* as well as *Table 5* and *Table 6* present the summary statistics for finalists, accepted finalists, and not accepted finalists with regard to the outcome variables.
 
 ```{r, echo=FALSE}
 data %>% dplyr::select(short_run_activity, ongoing_activity) %>% 
@@ -154,7 +154,7 @@ data_rejected %>% dplyr::select(short_run_activity, ongoing_activity) %>%
      title = "Summary Statistics on Outcomes: Not Accepted Finalists")
 ```
 
-It seemed, however, advisable, to add an additional variables to the data set, to measure whether finalists exhibited either short-term or ongoing start-up activity. Therefore, the dummy variable *startup_activity* was created.
+It seemed, however, advisable, to add a further variable to the data set, to measure whether finalists exhibited either short-term or ongoing start-up activity. Therefore, the dummy variable *startup_activity* was created.
 
 ```{r, include=FALSE}
 data$startup_activity <- 0
@@ -180,10 +180,10 @@ table_startup_activity
 
 Looking at the finalist it can be stated, that 128 (38.2 percent) were not employed in the start-up environment at all, while 207 out of 335 either worked in the short-term (70 or 20.9 percent) or continuously work for a start-up (137 or 40.9 percent).
 These numbers can be disseminated further by distinguishing between accepted and not accepted finalists. 
-Among the 179 accepted finalists, 136 (75.98 percent) worked in the start-up scene either in the sort-run or at the time of the survey. They account for a total of 65.7 percent of start-up activity after the program. Out of these 136 participants, 51 (37.5 percent) presented short-run activities while 85 (62.5 percent) were still employed by a start-up. Account for a total of percent short-run and percent ongoing start-up activity.
-At the same time, among the 156 not accepted finalists, only 71 (45.5 percent) presented any start-up activities at all, corresponding to 34.3 percent of total start-up activity. Out of these 71 not accepted finalists, 19 (26.76 percent) were active in the short-run only and 52 (73.24 percent) had ongoing start-up activities.
+Among the 179 accepted finalists, 136 (75.98 percent) worked in the start-up scene either in the short run or at the time of the survey. They account for a total of 65.7 percent of start-up activity after the program. Out of these 136 participants, 51 (37.5 percent) presented short-run activities while 85 (62.5 percent) were still employed by a start-up. Account for a total of percent short-run and percent ongoing start-up activity.
+At the same time, among the 156 not accepted finalists, only 71 (45.5 percent) presented any start-up activities at all, corresponding to 34.3 percent of total start-up activity. Out of these 71 not accepted finalists, 19 (26.76 percent) were active in the short run only and 52 (73.24 percent) had ongoing start-up activities.
 
-These results already suggests that, in general, the NEXT 36 had an impact on short-run but not on ongoing start-up activities for participants. Calculating Pearson's R confirms a positive correlation between participation in the program and start-up activity. There is also a slightly positive relationship between acceptance into the program and short-run as well as ongoing start-up activity, whereby the first is significantly higher than the latter.
+These results already suggest that, in general, the NEXT 36 had an impact on short run but not on ongoing start-up activities for participants. Calculating Pearson's R confirms a positive correlation between participation in the program and start-up activity. There is also a slightly positive relationship between acceptance into the program and short-run as well as ongoing start-up activity, whereby the first is significantly higher than the latter.
 
 ```{r, include=FALSE}
 cor(data$accepted, data$startup_activity,  method = "pearson", use = "complete.obs")
@@ -227,7 +227,7 @@ data %>% filter(accepted == 0, ongoing_activity == 1) %>% nrow()
 
 ## 3. Analysis
 
-The authors, however, were not interested in the general impact of the program on the participants, but on the outcome based on the participant's minority status. Therefore, the data set includes three variables (for summary statistics see *Table 1*).
+The authors, however, were not interested in the general impact of the program on the participants, but in the outcome based on the participant's minority status. Therefore, the data set includes three variables (for summary statistics see *Table 1*).
 
 * The first variable (*minority*) indicates whether a finalist belongs to a minority or not, while the other two variables further specify the minority status.
 * The second variable (*female*) indicates whether a finalist is female or not.
@@ -240,15 +240,15 @@ It is important, however, that while a finalist can either belong to a minority 
 * male and non-Caucasian (*female* = 0 & *non_white* = 1)
 * female and non-Caucasian (*female* = 1 & *non_white* = 1)
 
-To understand the impact of the program on these four categories, the paper first examines the admission data (*accepted*) to determine whether finalists are more likely to be accepted to the program based on their minority status. The the outcome (*startup_activity*, *short_run_activity*, *ongoing_activity*) of the program is investigated based on the finalists minority status 
+To understand the impact of the program on these four categories, the paper first examines the admission data (*accepted*) to determine whether finalists are more likely to be accepted to the program based on their minority status. The outcome (*startup_activity*, *short_run_activity*, *ongoing_activity*) of the program is investigated based on the finalists' minority status 
 
-### 3.1 Programm acceptance of minorties
+### 3.1 Programm acceptance of minorities
 
 Unfortunately, the authors did not further investigate the relationship between the likelihood of being accepted to the program and the finalist's minority status.
 
-Looking at the data, we can find the following results. Out of 335 finalists 212 (63.28 percent) belonged to a minority.
-Accordingly 36.7 percent of finalists were male and Caucasian, 12.8 percent female and Caucasian, 36.7 percent male and non_Caucasian, and 13.7 percent female and non-Caucasian. In total slightly more finalist were non-Caucasian (50.4 percent) compared to Caucasian (49.6 percent). At the same time, finalists were predominantly male (73.4 percent) and women accounted for only 26.6 percent.
-Out of these 212 finalists with minority status 43 (20.28 percent) were female and Caucasian, 123 (58 percent) were male and non-Caucasian, and finally 46 (21.7 percent) were female and non-Caucasian. For more information please consult the Figure 1-4 in the Annex.
+Looking at the data, we can find the following results. Out of 335 finalists, 212 (63.28 percent) belonged to a minority.
+Accordingly, 36.7 percent of finalists were male and Caucasian, 12.8 percent female and Caucasian, 36.7 percent male and non_Caucasian, and 13.7 percent female and non-Caucasian. In total, slightly more finalists were non-Caucasian (50.4 percent) compared to Caucasian (49.6 percent). At the same time, finalists were predominantly male (73.4 percent) and women accounted for only 26.6 percent.
+Out of these 212 finalists with minority status 43 (20.28 percent) were female and Caucasian, 123 (58 percent) were male and non-Caucasian, and finally, 46 (21.7 percent) were female and non-Caucasian. For more information please consult Figure 1-4 in the Annex.
 
 ```{r, include=FALSE}
 table_finalists_minority <- PercTable(female ~ non_white, data=data, margins=c(1,2))
@@ -267,7 +267,7 @@ data %>% filter(female == 0, non_white == 1) %>% nrow() /
   count(data, minority) [2,2] * 100
 ```
 
-In total 179 finalists were accepted to the program. 116 (64.8 percent) of them percent belonged to a minority. This corresponds to the 63.28 percent of finalists. Among the 116 accepted finalists from a minority, 28 (15.6 percent) were female and Caucasian, 66 (36.9 percent) were male and non-Caucasian, and finally, 22 (12.3 percent) were female and non-Caucasian. 
+In total 179 finalists were accepted to the program. 116 (64.8 percent) of them percent belonged to a minority. This corresponds to 63.28 percent of finalists. Among the 116 accepted finalists from a minority, 28 (15.6 percent) were female and Caucasian, 66 (36.9 percent) were male and non-Caucasian, and finally, 22 (12.3 percent) were female and non-Caucasian. 
 
 ```{r, include=FALSE}
 data %>% filter(accepted == 1, minority == 1) %>% nrow()
@@ -278,13 +278,13 @@ table_accepted_minority <- PercTable(female ~ non_white, data=data_accepted, mar
 table_accepted_minority
 ```
 
-Compared to the finalists, slightly less male and Caucasian finalist were accepted to the program (-1.5 percent), more female and Caucasian finalists were accepted to the program (2.8 percent), slightly more male and non-Caucasian finalists were accepted to the program (0.2 percent), and finally less female and non-Caucasian finalists were accepted to the program (-1.4 percent). This suggests, that male Caucasians and female non-Caucasian finalists were underrepresented among the participants, compared to the finalists.
-In the end, however, female Caucasians and male non-Caucasian finalists might have simply performed better during the selection on average, compared to their counterparts. Accordingly, it makes sense to run a linear regression. Acceptance to the program is the dependent variable, and the finalists' minority status (*Table 7*) or gender and race (*Table 8*) are the independent variables, respectively. None of the explanatory variables, however, are significant. When including more explanatory variables in the model, race and gender are still insignificant (*Table 9*). Instead, the interview score (*average_score*) and the ranking of the school contribute to the likelihood acceptance at a significance level of 99 and 90 percent, respectively:
+Compared to the finalists, slightly fewer male and Caucasian finalists were accepted to the program (-1.5 percent), more female and Caucasian finalists were accepted to the program (2.8 percent), slightly more male and non-Caucasian finalists were accepted to the program (0.2 percent), and finally less female and non-Caucasian finalists were accepted to the program (-1.4 percent). This suggests, that male Caucasians and female non-Caucasian finalists were underrepresented among the participants, compared to the finalists.
+In the end, however, female Caucasian and male non-Caucasian finalists might have simply performed better during the selection on average, compared to their counterparts. Accordingly, it makes sense to run a linear regression. Acceptance to the program is the dependent variable, and the finalists' minority status (*Table 7*) or gender and race (*Table 8*) are the independent variables, respectively. None of the explanatory variables, however, are significant. When including more explanatory variables in the model, race and gender are still insignificant (*Table 9*). Instead, the interview score (*average_score*) and the ranking of the school contribute to the likelihood of acceptance at a significance level of 99 and 90 percent, respectively:
 
-* a one point higher score in the average interview score (from 1 to 10) is related with a 10 percent higher likelihood of being accepted to the program
-* a one point higher school ranking (from 1 to 4) is related with a 5.7 percent higher likelihood of being accepted to the program.
+* a one point higher score in the average interview score (from 1 to 10) is related to a 10 percent higher likelihood of being accepted to the program
+* a one point higher school ranking (from 1 to 4) is related to a 5.7 percent higher likelihood of being accepted to the program.
 
-All three models, however, have a very low R-squared and thus, their explanatory power is very limited.
+All three models, however, have a very low R-squared, and thus, their explanatory power is very limited.
 
 ```{r, include=FALSE}
 model1_accepted_minorities <- lm(accepted ~ minority, data)
@@ -305,10 +305,10 @@ model2_accepted_minorities %>% tidy() %>% mutate(p.value = scales::pvalue(p.valu
 model3_accepted_minorities %>% tidy() %>% mutate(p.value = scales::pvalue(p.value), term = c("Intercept", "Female", "non-Caucasian", "Average Interview Score", "Years to Graduation", "Prior Experience in Entrepreneurship", "Entrepreneurially active region", "Engineering/Science Major", "Business/Economics Major", "Undergraduate College Ranking")) %>% kable(caption = "Various Characteristics on Finalist Acceptance", col.names = c("Predictor", "B", "SE", "t", "p"), digits = c(0, 2, 3, 2, 3))
 ```
 
-### 3.2 Program outcomes for minorties
+### 3.2 Program outcomes for minorities
 
-To determine whether the training had any impact on the participant start-up activities based on their minority status, it is necessary to run multiple linear regressions. The authors of the paper have chosen the same method. For more information on the summary statistics in the sample please consult the Figure 5-12 in the Annex.
-First, to isolate the effect of sex on start-up activities four regressions are required impact of the program on
+To determine whether the training had any impact on the participant start-up activities based on their minority status, it is necessary to run multiple linear regressions. The authors of the paper have chosen the same method. For more information on the summary statistics in the sample please consult Figure 5-12 in the Annex.
+First, to isolate the effect of sex on start-up activities four regressions are required to significantly impact the program on
 
 * Female participants in terms of short-run start-up activities
 * Male participants in terms of short-run start-up activities
@@ -348,9 +348,9 @@ model_ongoing_female %>% tidy() %>% mutate(p.value = scales::pvalue(p.value), te
 model_ongoing_male %>% tidy() %>% mutate(p.value = scales::pvalue(p.value), term = c("Intercept", "Program participant", "non-Caucasian", "Average Interview Score", "Years to Graduation", "Prior Experience in Entrepreneurship", "Entrepreneurially active region", "Engineering/Science Major", "Business/Economics Major", "Undergraduate College Ranking")) %>% kable(caption = "Ongoing effects on male participants", col.names = c("Predictor", "B", "SE", "t", "p"), digits = c(0, 2, 3, 2, 3))
 ```
 
-To understand the impact of the program on female participants, both in terms of short-run and ongoing start-up activity, *Table 10* and *Table 11* or *Table 12* and *Table 13* can be compared. Since the paper revolves around the question whether program participation has an impact on start-up activity, the main predictor in the tables is *Program participant*.
+To understand the impact of the program on female participants, both in terms of short-run and ongoing start-up activity, *Table 10* and *Table 11* or *Table 12* and *Table 13* can be compared. Since the paper revolves around the question of whether program participation has an impact on start-up activity, the main predictor in the tables is *Program participant*.
 
-In the short-run, female participants are 15.362 percent more likely to work in a start-up, while the impact on their male counterparts is at 13.275 percent. Accordingly, women are deemed to befit on average 2.087 percent more from the program in the short-term. This corresponds to a 15.72 percent higher output for women. At the same time, however, the predictor is not statistically significant for female participants. Additionally, the R-squared of both models is fairly low.
+In the short run, female participants are 15.362 percent more likely to work in a start-up, while the impact on their male counterparts is at 13.275 percent. Accordingly, women are deemed to befit on average 2.087 percent more from the program in the short-term. This corresponds to a 15.72 percent higher output for women. At the same time, however, the predictor is not statistically significant for female participants. Additionally, the R-squared of both models is fairly low.
 
 Looking at the ongoing start-up activities, women are 9.144 percent and men are 9.352 percent more likely to continuously work in a start-up. The difference is marginal at absolute -0.2084 percent and relative -2.23 percent. Yet again, however, the predictors are statistically not significant for both models and the R-squared is low.
 
@@ -396,9 +396,9 @@ model_ongoing_Caucasian %>% tidy() %>% mutate(p.value = scales::pvalue(p.value),
 
 Similarly, to understand the impact of the program on non-Caucasian participants, both in terms of short-run and ongoing start-up activity, the main predictor *Program participant* in *Table 14* and *Table 15* or *Table 16* and *Table 17* can be compared.
 
-In the short-run, non-Caucasian participants are 6.427 percent and Caucasian participants are 23.224 percent more likely to work in a start-up. Accordingly, in the sort-run non-Caucasians are deemed to befit on average 16.7964 percent less from the program than their Caucasian counterparts. This corresponds to a 72.32 lower output for non-Caucasian participants. At the same time, however, the predictor for non-Caucasian participants is not statistically significant. Additionally, the R-squared of both models is fairly low.
+In the short run, non-Caucasian participants are 6.427 percent and Caucasian participants are 23.224 percent more likely to work in a start-up. Accordingly, in the sort-run non-Caucasians are deemed to befit on average 16.7964 percent less from the program than their Caucasian counterparts. This corresponds to a 72.32 lower output for non-Caucasian participants. At the same time, however, the predictor for non-Caucasian participants is not statistically significant. Additionally, the R-squared of both models is fairly low.
 
-Looking at the ongoing start-up activities, non-Caucasian are 11.651 percent and Caucasian participants are 7.225 percent more likely to continuously work in a start-up. The difference is at absolute 4.4262 percent and relative 61.264 percent. Again, however, the predictors are statistically not significant for both models and the R-squared is low.
+Looking at the ongoing start-up activities, non-Caucasians are 11.651 percent and Caucasian participants are 7.225 percent more likely to continuously work in a start-up. The difference is at absolute 4.4262 percent and relative 61.264 percent. Again, however, the predictors are statistically not significant for both models and the R-squared is low.
 
 Looking at minorities from a more general perspective, the effect of the training participant's minority status on start-up activity can be examined. 
 
@@ -446,9 +446,9 @@ Looking at minorities from a more general perspective, it can be said that:
 * Non-minorities are 0.11 percent more likely to continuously engage in start-up activities if they participate in the program. The results are not significant (*Table 21*).
 * Accordingly, participating in the program, minorities are 14.54 percent more likely to work continuously in start-ups, compared to non-minorities. This relates to a 130.17 percent difference.
 
-This means, that the program's impact on non-minorities in the short-run and minorities in ongoing start-up activity, if they participate in the program, is comparable. Although the coefficient for the former is significantly higher, the differences between both categories is the same at approximately 130 percent. The estimators for participating minorities in the short-run and participating non-minorities on ongoing start-up activities are not significant. Nonetheless, it is remarkable, that the training's impact on participating non-minorities for ongoing start-up activity is very low.
+This means, that the program's impact on non-minorities in the short-run and minorities in ongoing start-up activity if they participate in the program, is comparable. Although the coefficient for the former is significantly higher, the differences between both categories are the same at approximately 130 percent. The estimators for participating minorities in the short-run and participating non-minorities on ongoing start-up activities are not significant. Nonetheless, it is remarkable, that the training's impact on participating non-minorities for ongoing start-up activity is very low.
 
-Including regressions with interaction terms for sex, race and minority status yields the following results:
+Including regressions with interaction terms for sex, race, and minority status yields the following results:
 
 * Minorities participating in the program are 13.2 percent less likely to participate in short-term start-up activities compared to not accepted minorities or non-minorities in general. The results are not significant.
 * Minorities participating in the program are 16.82 percent more likely to participate in ongoing start-up activities compared to not accepted minorities or non-minorities in general. The results are not significant.
@@ -478,18 +478,18 @@ summary(model_ongoing_non_white_interaction)
 
 The authors of the original paper presented the following results:
 1. Participation in The NEXT 36 correlates with a 23 percent increase in the likelihood of short-term start-up activity for non-minorities. 
-2. Participation in The NEXT 36 correlates with a 28 percent increase in the likelihood of ongoing start-up activity for female and 19 percent for non-Caucasian.
+2. Participation in The NEXT 36 correlates with a 28 percent increase in the likelihood of ongoing start-up activity for females and 19 percent for non-Caucasians.
 
 After exploring and analyzing the data provided, this paper finds the following relationships:
 
 1. Participation in The NEXT 36 correlates with a 26.845 percent increase in the likelihood of short-term start-up activity for non-minorities.
 2. Participation in The NEXT 36 correlates with a 23.224 percent increase in the likelihood of short-term start-up activity for Caucasians (at a 98 percent significance level) and a 13.27 percent increase in the likelihood of short-term start-up activity for men (at a 95 percent significance level)  
 
-Accordingly, the paper failed to replicate the results from the original paper. In sum, however, all coefficients are positive, indicating a positive relationship between program participation and start-up activities no matter the participants sex or race. Nonetheless, the majority of the coefficients are statistically insignificant, which bears the question how the authors of the original paper achieve their results.
+Accordingly, the paper failed to replicate the results from the original paper. In sum, however, all coefficients are positive, indicating a positive relationship between program participation and start-up activities no matter the participants' sex or race. Nonetheless, the majority of the coefficients are statistically insignificant, which bears the question of how the authors of the original paper achieve their results.
 
-Up to date many papers tried to measure the impact of training program, but there is little research on the differential impact of entrepreneurial training on minorities. Although the original paper tried to fill this scientific gap, it suffers from very low statistical power due to the low number of observations. Therefore, the authors failed to overcome one of the main criticisms brought forwards by McKenzie et al. already in 2014. For a more successful example, see the Campos et al. (2017).
+To date many papers tried to measure the impact of training programs, but there is little research on the differential impact of entrepreneurial training on minorities. Although the original paper tried to fill this scientific gap, it suffers from very low statistical power due to the low number of observations. Therefore, the authors failed to overcome one of the main criticisms brought forwards by McKenzie et al. already in 2014. For a more successful example, see the Campos et al. (2017).
 
-In the end, it proofed difficult trying to replicate the results, because the raw data was not available and the data provided on the website of the journal was not sufficient. Additionally, this paper is the authors first attempt in replicating a paper published in a renowned journal. Despite a often cited *replication crises*"* he results are not satisfying and the process was not very rewarding.
+In the end, it proved difficult trying to replicate the results, because the raw data was not available and the data provided on the journal's website was not sufficient. Additionally, this paper is the authors' first attempt in replicating a paper published in a renowned journal. Despite the often cited *replication crises*"*, the results are not satisfying and the process was not very rewarding.
 
 ## 5. References
 
