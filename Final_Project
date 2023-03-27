@@ -433,7 +433,6 @@ model_short_run_non_minority %>% tidy() %>% mutate(p.value = scales::pvalue(p.va
 model_ongoing_minority %>% tidy() %>% mutate(p.value = scales::pvalue(p.value), term = c("Intercept", "Program participant", "Average Interview Score", "Years to Graduation", "Prior Experience in Entrepreneurship", "Entrepreneurially active region", "Engineering/Science Major", "Business/Economics Major", "Undergraduate College Ranking")) %>% kable(caption = "Ongoing effects on minority participants", col.names = c("Predictor", "B", "SE", "t", "p"), digits = c(0, 2, 3, 2, 3))
 
 model_ongoing_non_minority %>% tidy() %>% mutate(p.value = scales::pvalue(p.value), term = c("Intercept", "Program participant", "Average Interview Score", "Years to Graduation", "Prior Experience in Entrepreneurship", "Entrepreneurially active region", "Engineering/Science Major", "Business/Economics Major", "Undergraduate College Ranking")) %>% kable(caption = "Ongoing effects on non-minority participants", col.names = c("Predictor", "B", "SE", "t", "p"), digits = c(0, 2, 3, 2, 3))
-
 ```
 
 Looking at minorities from a more general perspective, it can be said that:
@@ -489,7 +488,7 @@ Accordingly, the paper failed to replicate the results from the original paper. 
 
 To date many papers tried to measure the impact of training programs, but there is little research on the differential impact of entrepreneurial training on minorities. Although the original paper tried to fill this scientific gap, it suffers from very low statistical power due to the low number of observations. Therefore, the authors failed to overcome one of the main criticisms brought forwards by McKenzie et al. already in 2014. For a more successful example, see the Campos et al. (2017).
 
-In the end, it proved difficult trying to replicate the results, because the raw data was not available and the data provided on the journal's website was not sufficient. Additionally, this paper is the authors' first attempt in replicating a paper published in a renowned journal. Despite the often cited *replication crises*"*, the results are not satisfying and the process was not very rewarding.
+In the end, it proved difficult trying to replicate the results, because the raw data was not available and the data provided on the journal's website was not sufficient. Additionally, this paper is the authors' first attempt in replicating a paper published in a renowned journal. Despite the often cited *replication crises*, the results are not satisfying and the process was not very rewarding.
 
 ## 5. References
 
@@ -504,8 +503,12 @@ In the end, it proved difficult trying to replicate the results, because the raw
 * McKenzie D. & Woodruff C. (2014): *What are We Learning from Business Training and Entrepreneurship Evaluations around the Developing World?* World Bank Research Observer, 29: 48-82.
 
 **Remark:** Due to the requirement and the fact that the data set consist predominantly of dummy variables, the paper does not include  graphs. Some bar graphs, however, can be found in the R Markdown file for reference.
-```{r, include=FALSE}
 
+**Data availability:** The data set analyzed for the current paper was retrieved from the American Economic Review and is available as a replication package on the website (https://www.openicpsr.org/openicpsr/project/113492/version/V1/view).
+
+**Code availability:** All computer code used to generate the paper's main findings is available in the GitHub repository (https://github.com/FranzFerdinandWilleit/The_Impact_of_Entrepreneurship_Training_on_Minorities/blob/main/Final_Project).
+
+```{r, include=FALSE}
 PlotXTabs2(data, minority, accepted, results.subtitle = FALSE, title = "Figure 1: Finalist by Minority Status and Program Participation") + scale_fill_grey()
 PlotXTabs2(data, female, non_white, results.subtitle = FALSE, title = "Figure 2: Finalists by Sex and Race") + scale_fill_grey()
 PlotXTabs2(data_female, accepted, non_white, results.subtitle = FALSE, title = "Figure 3: Women by Program Participation and Race") + scale_fill_grey()
@@ -519,6 +522,3 @@ PlotXTabs2(data_accepted, ongoing_activity, minority, results.subtitle = FALSE, 
 PlotXTabs2(data_accepted, ongoing_activity, female, results.subtitle = FALSE, title = "Figure 11: Participants by Ongoing Activity and Sex") + scale_fill_grey()
 PlotXTabs2(data_accepted, ongoing_activity, non_white, results.subtitle = FALSE, title = "Figure 12: Participants by Ongoing Activity and Race") + scale_fill_grey()
 ```
-
-
-
