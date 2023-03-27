@@ -1,0 +1,569 @@
+title: "Annex I: Code in R Markdown"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r, echo = T, results = 'hide', error=F, warning=F, message=F}
+library(tinytex)
+library(dplyr)
+library(usethis)
+library(magrittr)
+library(devtools)
+library(jtools)
+library(skimr)
+library(rmarkdown)
+library(tidyverse)
+library(knitr)
+library(hrbrthemes)
+library(gapminder)
+library(ggplot2)
+library(ggthemes)
+library(Hmisc)
+library(wesanderson)
+library(stargazer)
+library(corrplot)
+library(cowplot)
+library(outliers)
+library(relaimpo)
+library(ggpubr)
+library(sm)
+library(interactions)
+library(vtable)
+library(haven)
+library(DescTools)
+library(CGPfunctions)
+```
+
+```{r, echo = T, results = 'hide', error=F, warning=F, message=F}
+setwd("C:/Users/wille/Documents/R")
+getwd()
+```
+
+```{r, echo = T, results = 'hide', error=F, warning=F, message=F}
+data <- read_dta("Lyons_Zhang2016_AERPP_analysisdata.dta")
+data <- data %>% na.omit()
+```
+
+```{r, echo = T, results = 'hide', error=F, warning=F, message=F}
+names(data)
+glimpse(data)
+summary(data)
+describe(data)
+sum(is.na(data))
+```
+
+```{r, echo = T, results = 'hide', error=F, warning=F, message=F}
+data_accepted <- data %>% filter(accepted == 1)
+data_rejected <- data %>% filter(accepted == 0)
+
+nrow(data_rejected) 
+nrow(data_accepted)
+
+(nrow(data_rejected)/nrow(data))*100
+(nrow(data_accepted)/nrow(data))*100
+```
+
+```{r, echo = T, results = 'hide', error=F, warning=F, message=F}
+data %>% dplyr::select(accepted, average_score, prior_entrepreneurship, 
+                                female, non_white, years_to_grad, 
+                       startup_region,
+                                engineer_compsci, business, school_rank) %>% 
+  st(, digits = 3, summ = c("notNA(x)", "mean(x)", "sd(x)", 
+                                             "min(x)", "max(x)"), summ.names = 
+                                             c("Obs.", "Mean", "Std. Dev.", 
+                                             "Mininimum", "Maximum"),
+     labels = c("Program participant", "Interview score", "Priop 
+                entrepreneurship experience", "Female", "Non-Caucasian", "Years 
+                to graduation", "Lives in active start-up region",
+                "Engineering/science Major", "Business/economics major", 
+                "Undergraduate college ranking"), title = "Summary Statistics
+     on Characteristics")
+
+data_accepted %>% dplyr::select(average_score, prior_entrepreneurship, 
+                       female, non_white, years_to_grad, startup_region,
+                       engineer_compsci, business, school_rank ) %>% 
+  st(, digits = 3, summ = c("mean(x)", "sd(x)", 
+                                             "min(x)", "max(x)"), summ.names = 
+       c("Mean", "Std. Dev.", "Mininimum", "Maximum"),
+     labels = c("Interview score", "Priop entrepreneurship experience", 
+     "Female", "Non-Caucasian", "Years to graduation", 
+     "Lives in active start-up region", "Engineering/science Major", 
+     "Business/economics major", "Undergraduate college ranking"), title = 
+       "Summary Satistics on Characteristics: Accepted Finalists")
+
+data_rejected %>% dplyr::select(average_score, prior_entrepreneurship, 
+                                female, non_white, years_to_grad, 
+                                startup_region,
+                                engineer_compsci, business, school_rank) %>% 
+  st(, digits = 3, summ = c("mean(x)", "sd(x)", 
+                                             "min(x)", "max(x)"), summ.names = 
+       c("Mean", "Std. Dev.", "Mininimum", "Maximum"),
+     labels = c("Interview score", "Priop entrepreneurship experience", 
+                "Female", "Non-Caucasian", "Years to graduation", 
+                "Lives in active start-up region", "Engineering/science Major", 
+                "Business/economics major", "Undergraduate college ranking"),
+     title =  "Summary Satisticson Characteristics: Not Accepted Finalists")
+```
+
+```{r, echo = T, results = 'hide', error=F, warning=F, message=F}
+data %>% dplyr::select(short_run_activity, ongoing_activity) %>% 
+  st(, digits = 3, summ = c("notNA(x)", "mean(x)", "sd(x)", 
+                                            "min(x)", "max(x)"), summ.names = 
+       c("Obs.", "Mean", "Std. Dev.", "Mininimum", "Maximum"), 
+     labels =  c("Short-term start-up activity", "Ongoing start-up activity"),
+     title = "Summary Statistics on Outcomes")
+
+data_accepted %>% dplyr::select(short_run_activity, ongoing_activity) %>% 
+  st(, digits = 3, summ = c("mean(x)", "sd(x)"), summ.names = 
+       c("Mean", "Std. Dev."), 
+     labels =  c("Short-term start-up activity", "Ongoing start-up activity"), 
+     title = "Summary Statistics on Outcomes: Accepted Finalists")
+
+###rejected finalists
+data_rejected %>% dplyr::select(short_run_activity, ongoing_activity) %>% 
+  st(, digits = 3, summ = c("mean(x)", "sd(x)"), summ.names = 
+       c("Mean", "Std. Dev."), 
+     labels =  c("Short-term start-up activity", "Ongoing start-up activity"), 
+     title = "Summary Statistics on Outcomes: Not Accepted Finalists")
+```
+
+```{r, echo = T, results = 'hide', error=F, warning=F, message=F}
+data$startup_activity <- 0
+data$startup_activity <- ifelse(data$short_run_activity == 1, 1, 
+                                ifelse(data$ongoing_activity == 1, 1, 0))
+
+data_accepted <- data %>% filter(accepted == 1)
+data_rejected <- data %>% filter(accepted == 0)
+```
+
+```{r, echo = T, results = 'hide', error=F, warning=F, message=F}
+data %>% dplyr::select(finalist_id, short_run_activity, ongoing_activity, 
+                       startup_activity) %>% print(n=500)
+```
+
+```{r, echo = T, results = 'hide', error=F, warning=F, message=F}
+count(data, startup_activity)
+
+table_startup_activity <- PercTable(short_run_activity ~ ongoing_activity, 
+                                    data=data, margins=c(1,2))
+table_startup_activity
+```
+
+```{r, echo = T, results = 'hide', error=F, warning=F, message=F}
+cor(data$accepted, data$startup_activity,  method = "pearson", 
+    use = "complete.obs")
+cor(data$accepted, data$short_run_activity,  method = "pearson", 
+    use = "complete.obs")
+cor(data$accepted, data$ongoing_activity,  method = "pearson", 
+    use = "complete.obs")
+```
+
+```{r, echo = T, results = 'hide', error=F, warning=F, message=F}
+count(data_accepted, startup_activity)
+count(data_accepted, startup_activity) [2,2] / 
+  nrow(data_accepted) * 100
+
+count(data_accepted, startup_activity) [2,2] / 
+  count(data, startup_activity) [2,2] * 100
+
+data %>% filter(accepted == 1, short_run_activity == 1) %>% nrow()
+(data %>% filter(accepted == 1, short_run_activity == 1) %>% nrow() /
+    count(data_accepted, startup_activity) [2,2]) * 100
+
+data %>% filter(accepted == 1, ongoing_activity == 1) %>% nrow()
+(data %>% filter(accepted == 1, ongoing_activity == 1) %>% nrow() / 
+  count(data_accepted, startup_activity) [2,2]) * 100
+```
+
+```{r, echo = T, results = 'hide', error=F, warning=F, message=F}
+count(data_rejected, startup_activity)
+count(data_rejected, startup_activity) [2,2] / 
+  nrow(data_rejected) * 100
+
+count(data_rejected, startup_activity) [2,2] / 
+  count(data, startup_activity) [2,2] * 100
+
+data %>% filter(accepted == 0, short_run_activity == 1) %>% nrow()
+(data %>% filter(accepted == 0, short_run_activity == 1) %>% nrow() /
+    count(data_rejected, startup_activity) [2,2]) * 100
+
+data %>% filter(accepted == 0, ongoing_activity == 1) %>% nrow()
+(data %>% filter(accepted == 0, ongoing_activity == 1) %>% nrow() / 
+    count(data_rejected, startup_activity) [2,2]) * 100
+```
+
+```{r, echo = T, results = 'hide', error=F, warning=F, message=F}
+table_finalists_minority <- PercTable(female ~ non_white, data=data, 
+                                      margins=c(1,2))
+table_finalists_minority 
+
+count(data, minority)
+count(data, minority) [2,2] / length(data$minority) * 100
+
+data %>% filter(female == 1, non_white == 0) %>% nrow() / 
+  count(data, minority) [2,2] * 100
+
+data %>% filter(female == 1, non_white == 1) %>% nrow() / 
+  count(data, minority) [2,2] * 100
+
+data %>% filter(female == 0, non_white == 1) %>% nrow() / 
+  count(data, minority) [2,2] * 100
+```
+
+```{r, echo = T, results = 'hide', error=F, warning=F, message=F}
+data %>% filter(accepted == 1, minority == 1) %>% nrow()
+data %>% filter(accepted == 1, minority == 1) %>% nrow() / data %>% filter(
+  accepted == 1) %>% nrow() * 100
+
+table_accepted_minority <- PercTable(female ~ non_white, data=data_accepted, 
+                                     margins=c(1,2))
+table_accepted_minority
+```
+
+```{r, echo = T, results = 'hide', error=F, warning=F, message=F}
+model1_accepted_minorities <- lm(accepted ~ minority, data)
+summary(model1_accepted_minorities)
+model2_accepted_minorities <- lm(accepted ~ female*non_white, data)
+summary(model2_accepted_minorities)
+
+model3_accepted_minorities <- lm(accepted ~ female + non_white + average_score 
+                                 + years_to_grad + prior_entrepreneurship + 
+                                   startup_region + engineer_compsci + 
+                                   business + school_rank, data)
+summary(model3_accepted_minorities)
+```
+
+```{r, echo = T, results = 'hide', error=F, warning=F, message=F}
+model1_accepted_minorities %>% 
+  tidy() %>% mutate(p.value = scales::pvalue(p.value), 
+                    term = c("Intercept", "Minority")) %>% 
+  kable(caption = "Minority Status on Finalist Acceptance", 
+        col.names = c("Predictor", "B", "SE", "t", "p"),
+        digits = c(0, 2, 3, 2, 3))
+
+model2_accepted_minorities %>% 
+  tidy() %>% mutate(p.value = scales::pvalue(p.value), 
+         term = c("Intercept", "Female", "non-Caucasian", 
+                  "Interaction Term")) %>% 
+  kable(caption = "Sex and Race on Finalist Acceptance", 
+        col.names = c("Predictor", "B", "SE", "t", "p"), 
+        digits = c(0, 2, 3, 2, 3))
+
+model3_accepted_minorities %>% 
+  tidy() %>% mutate(p.value = scales::pvalue(p.value), 
+                    term = c("Intercept", "Female", "non-Caucasian", 
+                             "Average Interview Score", "Years to Graduation", 
+                             "Prior Experience in Entrepreneurship", 
+                             "Entrepreneurially active region", 
+                             "Engineering/Science Major", 
+                             "Business/Economics Major", 
+                             "Undergraduate College Ranking")) %>% 
+  kable(caption = "Various Characteristics on Finalist Acceptance", 
+        col.names = c("Predictor", "B", "SE", "t", "p"), 
+        digits = c(0, 2, 3, 2, 3))
+```
+
+```{r, echo = T, results = 'hide', error=F, warning=F, message=F}
+data_female <- data %>% filter(female == 1)
+data_male <- data %>% filter(female == 0)
+
+model_short_run_female <- lm(short_run_activity ~ accepted + non_white + 
+                               average_score + years_to_grad + 
+                               prior_entrepreneurship + startup_region + 
+                               engineer_compsci + business + school_rank, 
+                             data = data_female)
+summary(model_short_run_female)
+
+model_short_run_male <- lm(short_run_activity ~ accepted + non_white + 
+                             average_score + years_to_grad + 
+                             prior_entrepreneurship + startup_region + 
+                             engineer_compsci + business + school_rank, 
+                           data = data_male)
+summary(model_short_run_male)
+
+(0.15362 - 0.132752) * 100
+(0.15362 / 0.132752 - 1) * 100
+
+model_ongoing_female <- lm(ongoing_activity ~ accepted + non_white + 
+                             average_score + years_to_grad + 
+                             prior_entrepreneurship + startup_region + 
+                             engineer_compsci + business + school_rank, 
+                           data = data_female)
+summary(model_ongoing_female)
+
+model_ongoing_male <- lm(ongoing_activity ~ accepted + non_white + 
+                           average_score + years_to_grad + 
+                           prior_entrepreneurship + startup_region + 
+                           engineer_compsci + business + school_rank, 
+                         data = data_male)
+summary(model_ongoing_male)
+
+(0.091435 - 0.093519) * 100
+(0.091435 / 0.093519 - 1) * 100
+```
+
+```{r, echo = T, results = 'hide', error=F, warning=F, message=F}
+model_short_run_female %>% 
+  tidy() %>% mutate(p.value = scales::pvalue(p.value), 
+                    term = c("Intercept", "Program participant", 
+                             "non-Caucasian", "Average Interview Score", 
+                             "Years to Graduation", 
+                             "Prior Experience in Entrepreneurship", 
+                             "Entrepreneurially active region", 
+                             "Engineering/Science Major", 
+                             "Business/Economics Major", 
+                             "Undergraduate College Ranking")) %>% 
+  kable(caption = "Short-run effects on female participants", 
+        col.names = c("Predictor", "B", "SE", "t", "p"), 
+        digits = c(0, 2, 3, 2, 3))
+
+model_short_run_male %>% 
+  tidy() %>% mutate(p.value = scales::pvalue(p.value), 
+                    term = c("Intercept", "Program participant", 
+                             "non-Caucasian", "Average Interview Score", 
+                             "Years to Graduation", 
+                             "Prior Experience in Entrepreneurship", 
+                             "Entrepreneurially active region", 
+                             "Engineering/Science Major", 
+                             "Business/Economics Major", 
+                             "Undergraduate College Ranking")) %>% 
+  kable(caption = "Short-run effects on male participants", 
+        col.names = c("Predictor", "B", "SE", "t", "p"), 
+        digits = c(0, 2, 3, 2, 3))
+
+model_ongoing_female %>% 
+  tidy() %>% mutate(p.value = scales::pvalue(p.value), 
+                    term = c("Intercept", "Program participant", 
+                             "non-Caucasian", "Average Interview Score", 
+                             "Years to Graduation", 
+                             "Prior Experience in Entrepreneurship", 
+                             "Entrepreneurially active region", 
+                             "Engineering/Science Major", 
+                             "Business/Economics Major", 
+                             "Undergraduate College Ranking")) %>% 
+  kable(caption = "Ongoing effects on female participants", 
+        col.names = c("Predictor", "B", "SE", "t", "p"), 
+        digits = c(0, 2, 3, 2, 3))
+
+model_ongoing_male %>% 
+  tidy() %>% mutate(p.value = scales::pvalue(p.value), 
+                    term = c("Intercept", "Program participant", 
+                             "non-Caucasian", "Average Interview Score", 
+                             "Years to Graduation", 
+                             "Prior Experience in Entrepreneurship", 
+                             "Entrepreneurially active region", 
+                             "Engineering/Science Major", 
+                             "Business/Economics Major", 
+                             "Undergraduate College Ranking")) %>% 
+  kable(caption = "Ongoing effects on male participants", 
+        col.names = c("Predictor", "B", "SE", "t", "p"), 
+        digits = c(0, 2, 3, 2, 3))
+```
+
+```{r, echo = T, results = 'hide', error=F, warning=F, message=F}
+data_non_Caucasian <- data %>% filter(non_white == 1)
+data_Caucasian <- data %>% filter(non_white == 0)
+
+model_short_run_non_Caucasian <- lm(short_run_activity ~ accepted + female + 
+                                      average_score + years_to_grad + 
+                                      prior_entrepreneurship + startup_region + 
+                                      engineer_compsci + business + school_rank, 
+                                    data = data_non_Caucasian)
+summary(model_short_run_non_Caucasian)
+
+model_short_run_Caucasian <- lm(short_run_activity ~ accepted + female + 
+                                  average_score + years_to_grad + 
+                                  prior_entrepreneurship + startup_region + 
+                                  engineer_compsci + business + school_rank, 
+                                data = data_Caucasian)
+summary(model_short_run_Caucasian)
+
+(0.064273 - 0.232237) * 100
+(0.064273 / 0.232237 - 1) * 100
+
+model_ongoing_non_Caucasian <- lm(ongoing_activity ~ accepted + female + 
+                                    average_score + years_to_grad + 
+                                    prior_entrepreneurship + startup_region + 
+                                    engineer_compsci + business + school_rank, 
+                                  data = data_non_Caucasian)
+summary(model_ongoing_non_Caucasian)
+
+model_ongoing_Caucasian <- lm(ongoing_activity ~ accepted + female + 
+                                average_score + years_to_grad + 
+                                prior_entrepreneurship + startup_region + 
+                                engineer_compsci + business + school_rank, 
+                              data = data_Caucasian)
+summary(model_ongoing_Caucasian)
+
+(0.11651 - 0.072248) * 100
+(0.11651 / 0.072248 - 1) * 100
+```
+
+```{r, echo = T, results = 'hide', error=F, warning=F, message=F}
+model_short_run_non_Caucasian %>% 
+  tidy() %>% mutate(p.value = scales::pvalue(p.value), 
+                    term = c("Intercept", "Program participant", "Female", 
+                             "Average Interview Score", "Years to Graduation", 
+                             "Prior Experience in Entrepreneurship", 
+                             "Entrepreneurially active region", 
+                             "Engineering/Science Major", 
+                             "Business/Economics Major", 
+                             "Undergraduate College Ranking")) %>% 
+  kable(caption = "Short-run effects on non-Caucasian participants", 
+        col.names = c("Predictor", "B", "SE", "t", "p"), 
+        digits = c(0, 2, 3, 2, 3))
+
+model_short_run_Caucasian %>% 
+  tidy() %>% mutate(p.value = scales::pvalue(p.value), 
+                    term = c("Intercept", "Program participant", "Female", 
+                             "Average Interview Score", "Years to Graduation", 
+                             "Prior Experience in Entrepreneurship", 
+                             "Entrepreneurially active region", 
+                             "Engineering/Science Major", 
+                             "Business/Economics Major", 
+                             "Undergraduate College Ranking")) %>% 
+  kable(caption = "Short-run effects on Caucasian participants", 
+        col.names = c("Predictor", "B", "SE", "t", "p"), 
+        digits = c(0, 2, 3, 2, 3))
+
+model_ongoing_non_Caucasian %>% 
+  tidy() %>% mutate(p.value = scales::pvalue(p.value), 
+                    term = c("Intercept", "Program participant", "Female", 
+                             "Average Interview Score", "Years to Graduation", 
+                             "Prior Experience in Entrepreneurship", 
+                             "Entrepreneurially active region", 
+                             "Engineering/Science Major", 
+                             "Business/Economics Major", 
+                             "Undergraduate College Ranking")) %>% 
+  kable(caption = "Ongoing effects on non-Caucasian participants", 
+        col.names = c("Predictor", "B", "SE", "t", "p"), 
+        digits = c(0, 2, 3, 2, 3))
+
+model_ongoing_Caucasian %>% 
+  tidy() %>% mutate(p.value = scales::pvalue(p.value), 
+                    term = c("Intercept", "Program participant", "Female", 
+                             "Average Interview Score", "Years to Graduation", 
+                             "Prior Experience in Entrepreneurship", 
+                             "Entrepreneurially active region", 
+                             "Engineering/Science Major", 
+                             "Business/Economics Major", 
+                             "Undergraduate College Ranking")) %>% 
+  kable(caption = "Ongoing effects on Caucasian participants", 
+        col.names = c("Predictor", "B", "SE", "t", "p"), 
+        digits = c(0, 2, 3, 2, 3))
+```
+
+```{r, echo = T, results = 'hide', error=F, warning=F, message=F}
+data_minority <- data %>% filter(minority == 1)
+data_non_minority <- data %>% filter(minority == 0)
+
+model_short_run_minority <- lm(short_run_activity ~ accepted + average_score + 
+                                 years_to_grad + prior_entrepreneurship + 
+                                 startup_region + engineer_compsci + business + 
+                                 school_rank, data = data_minority)
+summary(model_short_run_minority)
+
+model_short_run_non_minority <- lm(short_run_activity ~ accepted + 
+                                     average_score + years_to_grad + 
+                                     prior_entrepreneurship + startup_region + 
+                                     engineer_compsci + business + school_rank, 
+                                   data = data_non_minority)
+summary(model_short_run_non_minority)
+
+(0.073966 - 0.26845) * 100
+(0.073966 / 0.26845 - 1) * 100
+
+model_ongoing_minority <- lm(ongoing_activity ~ accepted + average_score + 
+                               years_to_grad + prior_entrepreneurship + 
+                               startup_region + engineer_compsci + business + 
+                               school_rank, data = data_minority)
+summary(model_ongoing_minority)
+
+model_ongoing_non_minority <- lm(ongoing_activity ~ accepted + average_score + 
+                                   years_to_grad + prior_entrepreneurship + 
+                                   startup_region + engineer_compsci + 
+                                   business + school_rank, 
+                                 data = data_non_minority)
+summary(model_ongoing_non_minority)
+
+(0.146515 - 0.001117) * 100
+(0.146515 / 0.001117 - 1) * 100
+```
+
+```{r, echo = T, results = 'hide', error=F, warning=F, message=F}
+model_short_run_minority %>% 
+  tidy() %>% mutate(p.value = scales::pvalue(p.value), 
+                    term = c("Intercept", "Program participant", 
+                             "Average Interview Score", "Years to Graduation", 
+                             "Prior Experience in Entrepreneurship", 
+                             "Entrepreneurially active region", 
+                             "Engineering/Science Major", 
+                             "Business/Economics Major", 
+                             "Undergraduate College Ranking")) %>% 
+  kable(caption = "Short-run effects on minority participants", 
+        col.names = c("Predictor", "B", "SE", "t", "p"), 
+        digits = c(0, 2, 3, 2, 3))
+
+model_short_run_non_minority %>% 
+  tidy() %>% mutate(p.value = scales::pvalue(p.value), 
+                    term = c("Intercept", "Program participant", 
+                             "Average Interview Score", "Years to Graduation", 
+                             "Prior Experience in Entrepreneurship", 
+                             "Entrepreneurially active region", 
+                             "Engineering/Science Major", 
+                             "Business/Economics Major", 
+                             "Undergraduate College Ranking")) %>% 
+  kable(caption = "Short-run effects on non-minority participants", 
+        col.names = c("Predictor", "B", "SE", "t", "p"), 
+        digits = c(0, 2, 3, 2, 3))
+
+model_ongoing_minority %>% 
+  tidy() %>% mutate(p.value = scales::pvalue(p.value), 
+                    term = c("Intercept", "Program participant", 
+                             "Average Interview Score", "Years to Graduation", 
+                             "Prior Experience in Entrepreneurship", 
+                             "Entrepreneurially active region", 
+                             "Engineering/Science Major", 
+                             "Business/Economics Major", 
+                             "Undergraduate College Ranking")) %>% 
+  kable(caption = "Ongoing effects on minority participants", 
+        col.names = c("Predictor", "B", "SE", "t", "p"), 
+        digits = c(0, 2, 3, 2, 3))
+
+model_ongoing_non_minority %>% 
+  tidy() %>% mutate(p.value = scales::pvalue(p.value), 
+                    term = c("Intercept", "Program participant", 
+                             "Average Interview Score", "Years to Graduation", 
+                             "Prior Experience in Entrepreneurship", 
+                             "Entrepreneurially active region", 
+                             "Engineering/Science Major", 
+                             "Business/Economics Major", 
+                             "Undergraduate College Ranking")) %>% 
+  kable(caption = "Ongoing effects on non-minority participants", 
+        col.names = c("Predictor", "B", "SE", "t", "p"), 
+        digits = c(0, 2, 3, 2, 3))
+```
+
+```{r, echo = T, results = 'hide', error=F, warning=F, message=F}
+model_short_run_minority_interaction <- 
+  lm(short_run_activity ~ accepted*minority, data)
+summary(model_short_run_minority_interaction)
+model_ongoing_minority_interaction <- 
+  lm(ongoing_activity ~ accepted*minority, data)
+summary(model_ongoing_minority_interaction)
+
+model_short_run_female_interaction <- 
+  lm(short_run_activity ~ accepted*female, data)
+summary(model_short_run_female_interaction)
+model_ongoing_female_interaction <- 
+  lm(ongoing_activity ~ accepted*female, data)
+summary(model_ongoing_female_interaction)
+
+model_short_run_non_white_interaction <- 
+  lm(short_run_activity ~ accepted*non_white, data)
+summary(model_short_run_non_white_interaction)
+model_ongoing_non_white_interaction <- 
+  lm(ongoing_activity ~ accepted*non_white, data)
+summary(model_ongoing_non_white_interaction)
+```
